@@ -48,6 +48,18 @@ export const UserPanel: React.FC = () => {
     setIsAnalyzing(false);
   };
 
+  const [isLocked, setIsLocked] = useState(true);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '2') {
+        setIsLocked(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   useHeartbeat();
 
   return (
@@ -66,28 +78,68 @@ export const UserPanel: React.FC = () => {
         />
       </div>
 
-      {/* Floating Draggable Predictor */}
-      <motion.div 
-        drag
-        dragMomentum={false}
-        initial={{ opacity: 0, scale: 0.9, x: -20, y: -20 }}
-        animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-        className="absolute bottom-10 right-4 z-40 pointer-events-auto cursor-grab active:cursor-grabbing"
-      >
-        <div className="p-4">
-          <SignalBar 
-            signal={vipSignal} 
-            period={vipPeriod} 
-            currentPeriod={vipPeriod} 
-            secondsLeft={vipSeconds} 
-            maxSeconds={vipState === 'WAITING' ? 5 : 15}
-            isVip={true}
-            onManualSync={() => {}}
-            onNextSignal={handleNextSignal}
-            isAnalyzing={isAnalyzing}
-          />
+      {isLocked ? (
+        <div className="absolute inset-0 z-[100] bg-black/95 backdrop-blur-3xl flex flex-col items-center justify-center p-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="space-y-8 max-w-sm"
+          >
+            <div className="relative">
+              <div className="w-24 h-24 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto border-4 border-rose-500/30">
+                <span className="text-5xl text-rose-500 font-black animate-pulse prose-invert">!</span>
+              </div>
+              <div className="absolute inset-0 bg-rose-500/20 blur-[40px] rounded-full animate-pulse" />
+            </div>
+
+            <div className="space-y-4">
+              <h1 className="text-4xl font-black text-white tracking-tight uppercase italic underline decoration-rose-500/50">
+                বন্ধ করা হয়েছে
+              </h1>
+              <p className="text-white/70 text-lg font-medium leading-relaxed px-4">
+                এটা আর চালাতে পারবি না রে বোকারা <br/>
+                বসে বসে মুড়ি খা
+              </p>
+            </div>
+
+            {/* Hidden Input for Mobile Users to "write" the code if keyboard isn't active */}
+            <input 
+              type="text" 
+              maxLength={1}
+              autoFocus
+              className="absolute opacity-0 pointer-events-none"
+              onChange={(e) => {
+                if (e.target.value === '2') {
+                  setIsLocked(false);
+                }
+              }}
+            />
+          </motion.div>
         </div>
-      </motion.div>
+      ) : (
+        /* Floating Draggable Predictor */
+        <motion.div 
+          drag
+          dragMomentum={false}
+          initial={{ opacity: 0, scale: 0.9, x: -20, y: -20 }}
+          animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+          className="absolute bottom-10 right-4 z-40 pointer-events-auto cursor-grab active:cursor-grabbing"
+        >
+          <div className="p-4">
+            <SignalBar 
+              signal={vipSignal} 
+              period={vipPeriod} 
+              currentPeriod={vipPeriod} 
+              secondsLeft={vipSeconds} 
+              maxSeconds={vipState === 'WAITING' ? 5 : 15}
+              isVip={true}
+              onManualSync={() => {}}
+              onNextSignal={handleNextSignal}
+              isAnalyzing={isAnalyzing}
+            />
+          </div>
+        </motion.div>
+      )}
 
       {/* Bottom SafeArea */}
       <div className="absolute bottom-0 inset-x-0 h-2 bg-black/10 z-10 pointer-events-none" />
